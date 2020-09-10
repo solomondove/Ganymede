@@ -1,4 +1,41 @@
-#game-canvas {
-    border: 1px solid black; 
-    border-radius: 5px; 
+.dashboard {
+    background-color: black; 
+    padding: 20px; 
 }
+
+.game-backdrop {
+    margin: 50px; 
+    /* height: 100%; */
+    background-image: url("../assets/background2.png"); 
+    background-size: cover; 
+    background-repeat: no-repeat; 
+    animation-name: move; 
+    animation-duration: 100s; 
+    animation-iteration-count: infinite; 
+    animation-timing-function: linear; 
+    display: flex; 
+    justify-content: space-around; 
+    padding: 100px;  
+}
+
+
+#game-canvas {
+    border: 3px solid black; 
+    border-radius: 5px; 
+    background-color: rgb(0, 0, 0, .5); 
+}
+
+@keyframes move {
+    0% {
+        background-position: left; 
+    }
+    100% {
+        background-position: right; 
+    }
+}
+
+#ship, #debris, #explosion, #rocket-fire, #teleport, #teleport-swirl {
+    position: absolute; 
+    z-index: -1;  
+}
+
