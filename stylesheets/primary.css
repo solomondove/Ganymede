@@ -9,43 +9,55 @@
 
 @font-face {
     font-family: "VerminVibes"; 
-    src: url("../assets/VerminVibes1989Regular-m77m.ttf"); 
+    src: url("../assets/Vermin Vibes.ttf"); 
 }
 
 #preloadfont{
     font-family: "VerminVibes"; 
 }
+
 html, body { 
     height: 100%; 
+    width: 100%; 
     font-family: "VerminVibes"; 
 }
+
 .dashboard {
     background-color: black; 
     padding: 50px 100px; 
     height: 100%; 
+    display: flex; 
+    justify-content: center; 
 }
 
 .game-backdrop {
     /* margin: 50px;  */
     /* height: 100%; */
+    position: relative; 
     background-image: url("../assets/background2.png"); 
     background-size: cover; 
     background-repeat: no-repeat; 
     animation-name: move; 
-    animation-duration: 200s; 
+    animation-duration: 300s; 
     animation-iteration-count: infinite; 
     animation-timing-function: linear; 
     display: flex; 
+    width: 700px; 
+    height: 500px; 
     justify-content: space-around; 
     padding: 50px 100px;  
 }
 
-
+#star-canvas {
+    position: absolute; 
+    background-color: rgb(0, 0, 0, .5);
+    z-index: 0;
+}
 #game-canvas {
     font-family: "verminvibes"; 
     border: 3px solid black; 
     border-radius: 5px; 
-    background-color: rgb(0, 0, 0, .5); 
+    z-index: 1; 
 }
 
 

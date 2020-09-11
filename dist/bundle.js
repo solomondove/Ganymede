@@ -124,8 +124,14 @@ class Debris extends _moving_object_js__WEBPACK_IMPORTED_MODULE_1__["default"] {
 
     collideWith(otherObj) {
         if (otherObj instanceof _ship_js__WEBPACK_IMPORTED_MODULE_2__["default"]) {
+            this.vel[1] = (this.vel[1] + Math.floor(otherObj.vel[1]/3)); 
             otherObj.remove(); 
-            this.remove(); 
+            // this.remove(); 
+            return true; 
+        } else if (otherObj instanceof Debris) {
+            let holder = otherObj.vel[1]; 
+            otherObj.vel[1] = this.vel[1]; 
+            this.vel[1] = holder; 
             return true; 
         }
         return false; 
@@ -147,11 +153,13 @@ class Debris extends _moving_object_js__WEBPACK_IMPORTED_MODULE_1__["default"] {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _debris_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./debris.js */ "./lib/debris.js");
-/* harmony import */ var _ship__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ship */ "./lib/ship.js");
-/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./util.js */ "./lib/util.js");
-/* harmony import */ var _sprites_explosion_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./sprites/explosion.js */ "./lib/sprites/explosion.js");
-/* harmony import */ var _sprites_rocket_fire_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./sprites/rocket_fire.js */ "./lib/sprites/rocket_fire.js");
-/* harmony import */ var _sprites_teleport_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./sprites/teleport.js */ "./lib/sprites/teleport.js");
+/* harmony import */ var _ship_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ship.js */ "./lib/ship.js");
+/* harmony import */ var _star_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./star.js */ "./lib/star.js");
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./util.js */ "./lib/util.js");
+/* harmony import */ var _sprites_explosion_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./sprites/explosion.js */ "./lib/sprites/explosion.js");
+/* harmony import */ var _sprites_rocket_fire_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./sprites/rocket_fire.js */ "./lib/sprites/rocket_fire.js");
+/* harmony import */ var _sprites_teleport_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./sprites/teleport.js */ "./lib/sprites/teleport.js");
+ 
  
  
  
@@ -161,47 +169,92 @@ __webpack_require__.r(__webpack_exports__);
 
 class Game {
     constructor(options) {
-        this.num_debris = 3; 
+        this.num_debris = 0; 
         this.debris = []; 
+        this.bonus = 1; 
+        this.num_stars = 12; 
+        this.stars = []; 
         this.ships = []; 
         this.over = false; 
         this.end_position = [0,0]; 
-        this.frameNum = 0; 
+        this.frameNums = {
+            rocket: 0, 
+            explosion: 0, 
+            warp: 0
+        }; 
         this.width = 750; 
         this.height = 500; 
-        
+        this.score = 0; 
+        this.timers = []; 
         
         this.addDebris(); 
+        this.addStar(); 
+        setTimeout(this.incrementNumDebris, 10000)
+
+        this.addStar = this.addStar.bind(this); 
+        this.add = this.add.bind(this); 
         this.draw = this.draw.bind(this); 
         this.incrementNumDebris = this.incrementNumDebris.bind(this); 
-        setTimeout(this.incrementNumDebris, 10000)
+    }
+
+    reset() {
+        this.num_debris = 0;
+        this.debris = [];
+        this.bonus = 1;
+        this.ships = [];
+        this.stars = []; 
+        this.over = false;
+        this.frameNums = {
+            rocket: 0,
+            explosion: 0,
+            warp: 0
+        };
+        this.score = 0;
     }
 
     incrementNumDebris() {
         this.num_debris += 1; 
-        setTimeout(this.incrementNumDebris, 10000);
+        this.timers.push(setTimeout(() => this.incrementNumDebris(), 10000));
+    }
+
+    incrementBonus() {
+        this.bonus += 1; 
+    }
+
+    incrementScore() {
+        this.socre += 1; 
     }
 
     add(object) {
         if (object instanceof _debris_js__WEBPACK_IMPORTED_MODULE_0__["default"]) {
             this.debris.push(object); 
-        } else if (object instanceof _ship__WEBPACK_IMPORTED_MODULE_1__["default"]) {
+        } else if (object instanceof _ship_js__WEBPACK_IMPORTED_MODULE_1__["default"]) {
             this.ships.push(object); 
+        } else if (object instanceof _star_js__WEBPACK_IMPORTED_MODULE_2__["default"]) {
+            this.stars.push(object); 
         } else {
             throw new Error("unknown type of object"); 
         }
     }
 
     addDebris() {
-            const debris = {
-                vel: _util_js__WEBPACK_IMPORTED_MODULE_2__["randomVel"](), 
-                game: this, 
-            }; 
-            this.add(new _debris_js__WEBPACK_IMPORTED_MODULE_0__["default"](debris)); 
+        const debris = {
+            vel: _util_js__WEBPACK_IMPORTED_MODULE_3__["randomVel"](), 
+            game: this, 
+        }; 
+        this.add(new _debris_js__WEBPACK_IMPORTED_MODULE_0__["default"](debris)); 
+    }
+
+    addStar() {
+        const star = {
+            game: this, 
+        }; 
+        this.add(new _star_js__WEBPACK_IMPORTED_MODULE_2__["default"](star))
+        setTimeout(this.addStar, 110); 
     }
 
     addShip() {
-        const ship = new _ship__WEBPACK_IMPORTED_MODULE_1__["default"]({
+        const ship = new _ship_js__WEBPACK_IMPORTED_MODULE_1__["default"]({
             pos: [150, 250], 
             game: this
         })
@@ -211,40 +264,50 @@ class Game {
 
 
     allObjects() {
-        return [].concat(this.debris).concat(this.ships); 
+        return [].concat(this.debris).concat(this.ships).concat(this.stars); 
     }
 
-    draw(ctx) {
+    allDescructableObjects() {
+        return [].concat(this.debris).concat(this.ships);
+    }
+
+    draw(ctx, ctxStar) {
         ctx.clearRect(0, 0, this.width, this.height);  
+        ctxStar.clearRect(0, 0, this.width, this.height)
        
 
-        if (this.over === true && this.frameNum < 33) {
-            Object(_sprites_explosion_js__WEBPACK_IMPORTED_MODULE_3__["explosionRender"])(this.end_position, ctx, this.frameNum)();
-            this.frameNum += 1;
-        } else if (this.ships.length > 0) {
+        if (this.over === true && this.frameNums.explosion < 34) {
+            Object(_sprites_explosion_js__WEBPACK_IMPORTED_MODULE_4__["explosionRender"])(this.end_position, ctx, this.frameNums.explosion)();
+            this.frameNums.explosion += 1;
+        } else if (this.ships.length > 0 && this.over === false) {
             let ship = this.ships[0]; 
-            Object(_sprites_rocket_fire_js__WEBPACK_IMPORTED_MODULE_4__["rocketFireRender"])(ship.pos, ctx, this.frameNum)(); 
-            this.frameNum += 1; 
-            if (this.frameNum > 34) this.frameNum = 0; 
+            Object(_sprites_rocket_fire_js__WEBPACK_IMPORTED_MODULE_5__["rocketFireRender"])(ship.pos, ctx, this.frameNums.rocket)(); 
+            this.frameNums.rocket += 1; 
+            if (this.frameNums.rocket > 33) this.frameNums.rocket = 0; 
         }
 
         if (this.ships.length > 0 && this.ships[0].teleport === true) {
             let ship = this.ships[0]; 
-            Object(_sprites_teleport_js__WEBPACK_IMPORTED_MODULE_5__["teleportSwirlRender"])(ship.oldPos, ctx, ship.teleFrame)(); 
-            ship.teleFrame += 1;
-            if (ship.teleFrame > 39) {
-                ship.teleFrame = 0; 
+            Object(_sprites_teleport_js__WEBPACK_IMPORTED_MODULE_6__["teleportSwirlRender"])(ship.oldPos, ctx, this.frameNums.warp)(); 
+            this.frameNums.warp += 1;
+            if (this.frameNums.warp > 39) {
+                this.frameNums.warp = 0; 
+                ship.teleport = false; 
             }
         }
-        
+        // ctx.fillText(this.score, 0, 0);
         this.allObjects().forEach(object => {
-            object.draw(ctx)
+            if (object instanceof _star_js__WEBPACK_IMPORTED_MODULE_2__["default"]) {
+                object.draw(ctxStar); 
+            } else {
+                object.draw(ctx)
+            }
         })
     }
 
-    moveObjects(delta) {
+    moveObjects() {
         this.allObjects().forEach(object => {
-            object.move(delta);
+            object.move();
         });
 
     }
@@ -254,17 +317,20 @@ class Game {
     }
 
     checkCollisions() {
-        let allObjects = this.allObjects(); 
+        let allObjects = this.allDescructableObjects(); 
         for (let i = 0; i < allObjects.length; i++) {
             for (let j = 0; j < allObjects.length; j++) {
                 if (i !== j) {
                     const obj1 = allObjects[i]; 
                     const obj2 = allObjects[j]; 
                     
-                    if (obj1.didCollideWith(obj2) && obj1.collideWith(obj2)) {
-                        this.over = true; 
-                        this.end_position = obj2.pos; 
-                        this.frameNum = 0; //resets for animation render
+                    if (obj1.didCollideWith(obj2)) {
+                        obj1.collideWith(obj2); 
+                        if (obj2 instanceof _ship_js__WEBPACK_IMPORTED_MODULE_1__["default"] || obj1 instanceof _ship_js__WEBPACK_IMPORTED_MODULE_1__["default"]) {
+                            this.over = true; 
+                            this.end_position = obj2.pos; 
+                        }
+                    
                     }
                 }
             }
@@ -274,8 +340,10 @@ class Game {
     remove(object) {
         if (object instanceof _debris_js__WEBPACK_IMPORTED_MODULE_0__["default"]) {
             this.debris.splice(this.debris.indexOf(object), 1); 
-        } else if (object instanceof _ship__WEBPACK_IMPORTED_MODULE_1__["default"]) {
+        } else if (object instanceof _ship_js__WEBPACK_IMPORTED_MODULE_1__["default"]) {
             this.ships = []; 
+        } else if (object instanceof _star_js__WEBPACK_IMPORTED_MODULE_2__["default"]) {
+            this.stars.splice(this.stars.indexOf(object), 1); 
         } else {
             throw new Error("unknown type of object"); 
         }
@@ -312,21 +380,24 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class GameView {
-    constructor(game, ctx) {
+    constructor(game, ctx, ctxStar) {
         this.ctx = ctx; 
+        this.ctxStar = ctxStar; 
         this.game = game; 
         this.moves = ["i", "j", "k", "l"]; 
-        this.ship = this.game.addShip(); 
+        // this.ship = this.game.addShip(); 
+        this.ship; 
         this.paused = false; 
         this.keysPressed = {}; 
-
+        this.animationFrame; 
         this.animate = this.animate.bind(this); 
         this.pause = this.pause.bind(this); 
-        // this.bindKeyHandlers = this.bindKeyHandlers.bind(this); 
+        this.startDebris = this.startDebris.bind(this); 
+        this.pauseTime = 0; 
 
         document.addEventListener("keydown", e => {
             if (e.key === "u") {
-                Object(_util_js__WEBPACK_IMPORTED_MODULE_0__["startGame"])(); 
+                this.start(); 
             } else if (e.key === "o") {
                 this.pause(); 
             }
@@ -378,31 +449,49 @@ class GameView {
         }); 
     }
 
-    animate(time) {
-        if (this.paused === true ) return; 
-    
-        const timeDelta = time - this.lastTime; 
-        this.game.step(timeDelta); 
-        this.game.draw(this.ctx); 
-        this.lastTime = time; 
+    animate() {
+        if (this.paused === true ) {
+            return; 
+        }; 
+        this.game.step(); 
+        this.game.draw(this.ctx, this.ctxStar); 
+         
 
 
 
-        requestAnimationFrame(this.animate); 
+        this.animationFrame = requestAnimationFrame(this.animate); 
     }
 
     start() {
-        // this.bindKeyHandlers(); 
-        this.lastTime = 0; 
-        requestAnimationFrame(this.animate); 
+        this.game.timers.forEach(timer => {
+            clearTimeout(timer); 
+        })
+        cancelAnimationFrame(this.animationFrame); 
+        // this.game = new Game(); 
+        this.game.reset(); 
+        this.ctx.clearRect(0, 0, this.game.width, this.game.height);
+        this.ctxStar.clearRect(0, 0, this.game.width, this.game.height) 
+        this.ship = this.game.addShip();
+        this.game.addStar(); 
+        // this.game.bonusTimer = setInterval(() => this.game.incrementBonus(), 30000)
+        // this.game.scoreTimer = setInterval(() => this.game.incrementScore(), 10)
+        this.game.timers.push(setTimeout(this.startDebris, 3000)); 
+        this.animationFrame = requestAnimationFrame(this.animate); 
+    }
+     
+    startDebris() {
+        this.game.num_debris = 3; 
+        this.game.timers.push(setTimeout(() => this.game.incrementNumDebris(), 10000)); 
     }
 
     pause() {
         if (this.paused === true) {
-            this.paused = false;
-            requestAnimationFrame(() => this.animate(0)); 
+            this.paused = false; 
+            this.animate(this.pauseTime); 
+            this.pauseTime = 0; 
         } else {
             this.paused = true;
+            cancelAnimationFrame(this.animationFrame); 
         }
     }
 }
@@ -424,22 +513,23 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sprites_explosion_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./sprites/explosion.js */ "./lib/sprites/explosion.js");
 /* harmony import */ var _game_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game.js */ "./lib/game.js");
 /* harmony import */ var _game_view_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_view.js */ "./lib/game_view.js");
+/* harmony import */ var _title_screen_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./title_screen.js */ "./lib/title_screen.js");
  
  
 
+ 
  
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    const canvasEl = document.getElementById("game-canvas")
+    const canvasEl = document.getElementById("game-canvas");
     const ctx = canvasEl.getContext("2d");
-    ctx.fillStyle = "white"; 
-    ctx.textAlign = "center"; 
-    ctx.font = '30px VerminVibes'; 
-    ctx.fillText("Ganymede", canvasEl.width/2, canvasEl.height/2);
+    const canvasST = document.getElementById("star-canvas"); 
+    const ctxStar = canvasST.getContext("2d"); 
 
+    Object(_title_screen_js__WEBPACK_IMPORTED_MODULE_4__["renderTitle"])(ctx, canvasEl); 
     const game = new _game_js__WEBPACK_IMPORTED_MODULE_2__["default"]();
-    new _game_view_js__WEBPACK_IMPORTED_MODULE_3__["default"](game, ctx); 
+    new _game_view_js__WEBPACK_IMPORTED_MODULE_3__["default"](game, ctx, ctxStar); 
 
     
 })
@@ -477,13 +567,8 @@ class MovingObject {
         ctx.fill(); 
     }
 
-    move(timeDelta) {
-        const NORMAL_FRAME_TIME_DELTA = 1000 / 60 
-        const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
-            offsetX = this.vel[0] * velocityScale,
-            offsetY = this.vel[1] * velocityScale;
-
-        let newPos = [this.pos[0] + offsetX, this.pos[1] + offsetY]; 
+    move() { 
+        let newPos = [this.pos[0] + this.vel[0], this.pos[1] + this.vel[1]]; 
         if (this.game.isOutOfBounds(newPos) && this.escape === true) {
             this.pos = newPos; 
             this.remove(); 
@@ -537,7 +622,6 @@ class Ship extends _moving_object_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
         this.escape = false;
         this.oldPos = [0, 0]; 
         this.teleport = false; 
-        this.teleFrame = 0; 
 
         this.warpDelay = this.warpDelay.bind(this); 
     }
@@ -626,7 +710,6 @@ class Ship extends _moving_object_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
     warpDelay(pos){
         window.setTimeout(() => {
             this.pos = pos;
-            this.teleport = false; 
         }, 600)
         // this.pos = pos; 
     }
@@ -719,8 +802,8 @@ function warpUtil(direction, ship) {
                 let holder5 = ship.pos.slice();
                 ship.teleport = true;
                 ship.oldPos = ship.pos;
-                holder5[0] += -150;
-                holder5[1] += -150; 
+                holder5[0] += -120;
+                holder5[1] += -120; 
                 if (holder5[0] > 500) holder5[0] = 500;
                 ship.pos = [1000, 0];
                 ship.warpDelay(holder5);
@@ -731,8 +814,8 @@ function warpUtil(direction, ship) {
                 let holder6 = ship.pos.slice();
                 ship.teleport = true;
                 ship.oldPos = ship.pos;
-                holder6[0] += 150;
-                holder6[1] += -150;
+                holder6[0] += 120;
+                holder6[1] += -120;
                 if (holder6[0] > 500) holder6[0] = 500;
                 ship.pos = [1000, 0];
                 ship.warpDelay(holder6);
@@ -743,8 +826,8 @@ function warpUtil(direction, ship) {
                 let holder7 = ship.pos.slice();
                 ship.teleport = true;
                 ship.oldPos = ship.pos;
-                holder7[0] += 150;
-                holder7[1] += 150;
+                holder7[0] += 120;
+                holder7[1] += 120;
                 if (holder7[0] > 500) holder7[0] = 500;
                 ship.pos = [1000, 0];
                 ship.warpDelay(holder7);
@@ -755,8 +838,8 @@ function warpUtil(direction, ship) {
                 let holder8 = ship.pos.slice();
                 ship.teleport = true;
                 ship.oldPos = ship.pos;
-                holder8[0] += -150;
-                holder8[1] += 150;
+                holder8[0] += -120;
+                holder8[1] += 120;
                 if (holder8[0] > 500) holder8[0] = 500;
                 ship.pos = [1000, 0];
                 ship.warpDelay(holder8);
@@ -781,7 +864,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "explosionRender", function() { return explosionRender; });
 
 function explosionRender(position, ctx, frame) {
-    let frameNumber = Math.floor( frame / 5)
+    let frameNumber = Math.floor( frame / 6 )
     const explosionImage = document.getElementById('explosion');
     const frames = {
         0: () => ctx.drawImage(explosionImage, 0, 0, 32, 32, position[0] - 20, position[1] - 15, 64, 64), 
@@ -860,11 +943,69 @@ function teleportSwirlRender(position, ctx, frame) {
 
 /***/ }),
 
+/***/ "./lib/star.js":
+/*!*********************!*\
+  !*** ./lib/star.js ***!
+  \*********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _moving_object_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./moving_object.js */ "./lib/moving_object.js");
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./util.js */ "./lib/util.js");
+ 
+ 
+
+class Star extends _moving_object_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
+    constructor(options) {
+        super(options); 
+        this.radius = 3; 
+        this.vel = [-8, 0]; 
+        this.pos = _util_js__WEBPACK_IMPORTED_MODULE_1__["randomPos"](); 
+        this.escape = true; 
+    }
+
+   draw(ctx) {
+       ctx.fillStyle = "rgba(255, 255, 255, 0.8)"; 
+       ctx.beginPath();
+       ctx.arc(
+           this.pos[0], this.pos[1], this.radius, 0, 2*Math.PI, true
+       ); 
+       ctx.fill();  
+   }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (Star); 
+
+/***/ }),
+
+/***/ "./lib/title_screen.js":
+/*!*****************************!*\
+  !*** ./lib/title_screen.js ***!
+  \*****************************/
+/*! exports provided: renderTitle */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderTitle", function() { return renderTitle; });
+function renderTitle(ctx, canvas, game) {
+    // ctx.clearRect(0, 0, game.width, game.height)
+    ctx.clear
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.font = '30px VerminVibes'; 
+    ctx.fillText("Ganymede", canvas.width / 2, canvas.height / 2);
+}
+
+/***/ }),
+
 /***/ "./lib/util.js":
 /*!*********************!*\
   !*** ./lib/util.js ***!
   \*********************/
-/*! exports provided: randomVel, randomPos, scale, distanceBetween, startGame */
+/*! exports provided: randomVel, randomPos, scale, distanceBetween */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -873,13 +1014,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "randomPos", function() { return randomPos; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "scale", function() { return scale; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "distanceBetween", function() { return distanceBetween; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "startGame", function() { return startGame; });
-/* harmony import */ var _game_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game.js */ "./lib/game.js");
-/* harmony import */ var _game_view_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_view.js */ "./lib/game_view.js");
 
- 
-
- // Return a randomly oriented vector with the given length.
 function randomVel() {
     let possibleY = [-1, 0, 1]
     const x = Math.floor(Math.random()*(-2) - 3);
@@ -904,13 +1039,6 @@ function distanceBetween(pos1, pos2) {
     return Math.sqrt(
         Math.pow(pos1[0] - pos2[0], 2) + Math.pow(pos1[1] - pos2[1], 2)
     ); 
-}
-
-function startGame() {
-    const canvasEl = document.getElementById("game-canvas")
-    const ctx = canvasEl.getContext("2d");
-    const game = new _game_js__WEBPACK_IMPORTED_MODULE_0__["default"]();
-    new _game_view_js__WEBPACK_IMPORTED_MODULE_1__["default"](game, ctx).start();
 }
 
 
