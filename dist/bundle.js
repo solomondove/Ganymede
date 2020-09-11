@@ -128,12 +128,7 @@ class Debris extends _moving_object_js__WEBPACK_IMPORTED_MODULE_1__["default"] {
             otherObj.remove(); 
             // this.remove(); 
             return true; 
-        } else if (otherObj instanceof Debris) {
-            let holder = otherObj.vel[1]; 
-            otherObj.vel[1] = this.vel[1]; 
-            this.vel[1] = holder; 
-            return true; 
-        }
+        } 
         return false; 
     }
 }
@@ -250,7 +245,7 @@ class Game {
             game: this, 
         }; 
         this.add(new _star_js__WEBPACK_IMPORTED_MODULE_2__["default"](star))
-        setTimeout(this.addStar, 110); 
+        this.timers.push(setTimeout(this.addStar, 110)); 
     }
 
     addShip() {
@@ -780,7 +775,7 @@ function warpUtil(direction, ship) {
                 let holder3 = ship.pos.slice();
                 ship.teleport = true;
                 ship.oldPos = ship.pos;
-                holder3[0] += -150;
+                holder3[0] += -200;
                 if (holder3[0] < 0) holder3[0] = 0;
                 ship.pos = [1000, 0];
                 ship.warpDelay(holder3);
@@ -791,7 +786,7 @@ function warpUtil(direction, ship) {
                 let holder4 = ship.pos.slice();
                 ship.teleport = true;
                 ship.oldPos = ship.pos;
-                holder4[0] += 150;
+                holder4[0] += 200;
                 if (holder4[0] > 500) holder4[0] = 500;
                 ship.pos = [1000, 0];
                 ship.warpDelay(holder4);
@@ -867,13 +862,13 @@ function explosionRender(position, ctx, frame) {
     let frameNumber = Math.floor( frame / 6 )
     const explosionImage = document.getElementById('explosion');
     const frames = {
-        0: () => ctx.drawImage(explosionImage, 0, 0, 32, 32, position[0] - 20, position[1] - 15, 64, 64), 
-        1: () => ctx.drawImage(explosionImage, 32, 0, 32, 32, position[0] - 20, position[1] - 15, 64, 64),     
-        2: () => ctx.drawImage(explosionImage, 64, 0, 32, 32, position[0] - 20, position[1] - 15, 64, 64),       
-        3: () => ctx.drawImage(explosionImage, 96, 0, 32, 32, position[0] - 20, position[1] - 15, 64, 64),        
-        4: () => ctx.drawImage(explosionImage, 128, 0, 32, 32, position[0] - 20, position[1] - 15, 64, 64),      
-        5: () => ctx.drawImage(explosionImage, 160, 0, 32, 32, position[0] - 20, position[1] - 15, 64, 64),     
-        6: () => ctx.drawImage(explosionImage, 192, 0, 32, 32, position[0] - 20, position[1] - 15, 64, 64)
+        0: () => ctx.drawImage(explosionImage, 0, 0, 32, 32, position[0] - 45, position[1] - 15, 64, 64), 
+        1: () => ctx.drawImage(explosionImage, 32, 0, 32, 32, position[0] - 45, position[1] - 15, 64, 64),     
+        2: () => ctx.drawImage(explosionImage, 64, 0, 32, 32, position[0] - 45, position[1] - 15, 64, 64),       
+        3: () => ctx.drawImage(explosionImage, 96, 0, 32, 32, position[0] - 45, position[1] - 15, 64, 64),        
+        4: () => ctx.drawImage(explosionImage, 128, 0, 32, 32, position[0] - 45, position[1] - 15, 64, 64),      
+        5: () => ctx.drawImage(explosionImage, 160, 0, 32, 32, position[0] - 45, position[1] - 15, 64, 64),     
+        6: () => ctx.drawImage(explosionImage, 192, 0, 32, 32, position[0] - 45, position[1] - 15, 64, 64)
         
     }
     return frames[frameNumber]
