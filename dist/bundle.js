@@ -330,15 +330,41 @@ class GameView {
             } else if (e.key === "o") {
                 this.pause(); 
             }
+
             if (this.keysPressed["f"] === true) {
                 this.ship.warp(e.key); 
             } else if (this.keysPressed["j"] === true){
-                this.ship.angleLeft(e.key);  
+                if (e.key === "f") {
+                    if (this.keysPressed["i"] === true ){
+                        this.ship.warp("ji")
+                    } else if (this.keysPressed["k"] === true) {
+                        this.ship.warp("jk")
+                    } else {
+                        this.ship.warp("j"); 
+                    }
+                }
+                this.ship.angleLeft(e.key); 
+ 
             } else if (this.keysPressed["l"] === true) {
-                this.ship.angleRight(e.key);
+                if (e.key === "f") {
+                    if (this.keysPressed["i"] === true){
+                        this.ship.warp("li")
+                    } else if (this.keysPressed["k"] === true) {
+                        this.ship.warp("lk")
+                    } else {
+                        this.ship.warp("l"); 
+                    }
+                } 
+                this.ship.angleRight(e.key)
             } else if (this.keysPressed["i"] === true) {
+                if (e.key === "f") {
+                    this.ship.warp("i"); 
+                }
                 this.ship.angleUp(e.key);
             } else if (this.keysPressed["k"] === true) {
+                if (e.key === "f") {
+                    this.ship.warp("k")
+                }
                 this.ship.angleDown(e.key);
             }else {
                 this.ship.moves(e.key); 
@@ -396,12 +422,24 @@ class GameView {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./util.js */ "./lib/util.js");
 /* harmony import */ var _sprites_explosion_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./sprites/explosion.js */ "./lib/sprites/explosion.js");
+/* harmony import */ var _game_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game.js */ "./lib/game.js");
+/* harmony import */ var _game_view_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_view.js */ "./lib/game_view.js");
  
  
 
+ 
 
 document.addEventListener("DOMContentLoaded", function () {
-    Object(_util_js__WEBPACK_IMPORTED_MODULE_0__["startGame"])();
+
+    const canvasEl = document.getElementById("game-canvas")
+    const ctx = canvasEl.getContext("2d");
+    ctx.fillStyle = "white"; 
+    ctx.textAlign = "center"; 
+    ctx.font = '30px VerminVibes'; 
+    ctx.fillText("Ganymede", canvasEl.width/2, canvasEl.height/2);
+
+    const game = new _game_js__WEBPACK_IMPORTED_MODULE_2__["default"]();
+    new _game_view_js__WEBPACK_IMPORTED_MODULE_3__["default"](game, ctx); 
 
     
 })
@@ -484,6 +522,8 @@ class MovingObject {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _moving_object_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./moving_object.js */ "./lib/moving_object.js");
 /* harmony import */ var _sprites_explosion_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./sprites/explosion.js */ "./lib/sprites/explosion.js");
+/* harmony import */ var _ship_controls_util_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ship_controls_util.js */ "./lib/ship_controls_util.js");
+ 
  
  
 
@@ -580,55 +620,7 @@ class Ship extends _moving_object_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
     }
 
     warp(direction) {
-        switch (direction) {
-            case "i":
-                if (this.teleport === false ) {
-                    let holder = this.pos.slice(); 
-                    this.teleport = true; 
-                    this.oldPos = this.pos; 
-                    holder[1] += -150; 
-                    if (holder[1] < 0 ) holder[1] = 0; 
-                    this.pos = [1000, 0];
-                    this.warpDelay(holder); 
-                }
-                
-                break;
-            case "k":
-                if (this.teleport === false) {
-                    let holder2 = this.pos.slice();
-                    this.teleport = true; 
-                    this.oldPos = this.pos; 
-                    holder2[1] += 150;
-                    if (holder2[1] > 500) holder2[1] = 500; 
-                    this.pos = [1000, 0];
-                    this.warpDelay(holder2); 
-                }
-                break;
-            case "j":
-                if (this.teleport === false) {
-                    let holder3 = this.pos.slice();
-                    this.teleport = true; 
-                    this.oldPos = this.pos; 
-                    holder3[0] += -150;
-                    if (holder3[0] < 0) holder3[0] = 0; 
-                    this.pos = [1000, 0];
-                    this.warpDelay(holder3); 
-                }
-                break;
-            case "l":
-                if (this.teleport === false ) {
-                    let holder4 = this.pos.slice();
-                    this.teleport = true; 
-                    this.oldPos = this.pos; 
-                    holder4[0] += 150;
-                    if (holder4[0] > 500) holder4[0] = 500; 
-                    this.pos = [1000, 0];
-                    this.warpDelay(holder4); 
-                }
-                break;
-            default:
-                break;
-        }
+        Object(_ship_controls_util_js__WEBPACK_IMPORTED_MODULE_2__["warpUtil"])(direction, this); 
     }
 
     warpDelay(pos){
@@ -662,6 +654,118 @@ class Ship extends _moving_object_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (Ship); 
+
+/***/ }),
+
+/***/ "./lib/ship_controls_util.js":
+/*!***********************************!*\
+  !*** ./lib/ship_controls_util.js ***!
+  \***********************************/
+/*! exports provided: warpUtil */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "warpUtil", function() { return warpUtil; });
+function warpUtil(direction, ship) {
+    switch (direction) {
+        case "i":
+            if (ship.teleport === false) {
+                let holder = ship.pos.slice();
+                ship.teleport = true;
+                ship.oldPos = ship.pos;
+                holder[1] += -150;
+                if (holder[1] < 0) holder[1] = 0;
+                ship.pos = [1000, 0];
+                ship.warpDelay(holder);
+            }
+
+            break;
+        case "k":
+            if (ship.teleport === false) {
+                let holder2 = ship.pos.slice();
+                ship.teleport = true;
+                ship.oldPos = ship.pos;
+                holder2[1] += 150;
+                if (holder2[1] > 500) holder2[1] = 500;
+                ship.pos = [1000, 0];
+                ship.warpDelay(holder2);
+            }
+            break;
+        case "j":
+            if (ship.teleport === false) {
+                let holder3 = ship.pos.slice();
+                ship.teleport = true;
+                ship.oldPos = ship.pos;
+                holder3[0] += -150;
+                if (holder3[0] < 0) holder3[0] = 0;
+                ship.pos = [1000, 0];
+                ship.warpDelay(holder3);
+            }
+            break;
+        case "l":
+            if (ship.teleport === false) {
+                let holder4 = ship.pos.slice();
+                ship.teleport = true;
+                ship.oldPos = ship.pos;
+                holder4[0] += 150;
+                if (holder4[0] > 500) holder4[0] = 500;
+                ship.pos = [1000, 0];
+                ship.warpDelay(holder4);
+            }
+            break;
+        case "ji":
+            if (ship.teleport === false) {
+                let holder5 = ship.pos.slice();
+                ship.teleport = true;
+                ship.oldPos = ship.pos;
+                holder5[0] += -150;
+                holder5[1] += -150; 
+                if (holder5[0] > 500) holder5[0] = 500;
+                ship.pos = [1000, 0];
+                ship.warpDelay(holder5);
+            }
+            break;
+        case "li":
+            if (ship.teleport === false) {
+                let holder6 = ship.pos.slice();
+                ship.teleport = true;
+                ship.oldPos = ship.pos;
+                holder6[0] += 150;
+                holder6[1] += -150;
+                if (holder6[0] > 500) holder6[0] = 500;
+                ship.pos = [1000, 0];
+                ship.warpDelay(holder6);
+            }
+            break;
+        case "lk":
+            if (ship.teleport === false) {
+                let holder7 = ship.pos.slice();
+                ship.teleport = true;
+                ship.oldPos = ship.pos;
+                holder7[0] += 150;
+                holder7[1] += 150;
+                if (holder7[0] > 500) holder7[0] = 500;
+                ship.pos = [1000, 0];
+                ship.warpDelay(holder7);
+            }
+            break;
+        case "jk":
+            if (ship.teleport === false) {
+                let holder8 = ship.pos.slice();
+                ship.teleport = true;
+                ship.oldPos = ship.pos;
+                holder8[0] += -150;
+                holder8[1] += 150;
+                if (holder8[0] > 500) holder8[0] = 500;
+                ship.pos = [1000, 0];
+                ship.warpDelay(holder8);
+            }
+            break;
+        default:
+            break;
+    }
+}
 
 /***/ }),
 
