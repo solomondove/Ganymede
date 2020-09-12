@@ -150,10 +150,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _debris_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./debris.js */ "./lib/debris.js");
 /* harmony import */ var _ship_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ship.js */ "./lib/ship.js");
 /* harmony import */ var _star_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./star.js */ "./lib/star.js");
-/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./util.js */ "./lib/util.js");
-/* harmony import */ var _sprites_explosion_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./sprites/explosion.js */ "./lib/sprites/explosion.js");
-/* harmony import */ var _sprites_rocket_fire_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./sprites/rocket_fire.js */ "./lib/sprites/rocket_fire.js");
-/* harmony import */ var _sprites_teleport_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./sprites/teleport.js */ "./lib/sprites/teleport.js");
+/* harmony import */ var _score_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./score.js */ "./lib/score.js");
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./util.js */ "./lib/util.js");
+/* harmony import */ var _sprites_explosion_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./sprites/explosion.js */ "./lib/sprites/explosion.js");
+/* harmony import */ var _sprites_rocket_fire_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./sprites/rocket_fire.js */ "./lib/sprites/rocket_fire.js");
+/* harmony import */ var _sprites_teleport_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./sprites/teleport.js */ "./lib/sprites/teleport.js");
+ 
  
  
  
@@ -163,7 +165,7 @@ __webpack_require__.r(__webpack_exports__);
  
 
 class Game {
-    constructor(options) {
+    constructor() {
         this.num_debris = 0; 
         this.debris = []; 
         this.bonus = 1; 
@@ -179,20 +181,35 @@ class Game {
         }; 
         this.width = 750; 
         this.height = 500; 
-        this.score = 0; 
+        this.score = new _score_js__WEBPACK_IMPORTED_MODULE_3__["default"](); 
         this.timers = []; 
-        
-        this.addDebris(); 
-        this.addStar(); 
-        setTimeout(this.incrementNumDebris, 10000)
+        this.intervals = []; 
+        this.debrisInterval; 
 
-        this.addStar = this.addStar.bind(this); 
         this.add = this.add.bind(this); 
+        this.step = this.step.bind(this); 
         this.draw = this.draw.bind(this); 
+        this.addStar = this.addStar.bind(this); 
         this.incrementNumDebris = this.incrementNumDebris.bind(this); 
+    }
+    
+    start() {
+        this.timers.push(setTimeout(() => {this.num_debris = 3}, 3000)); 
+        this.timers.push(setTimeout(this.addDebris, 10000)); 
+        this.addStar(); 
+        this.debrisInterval = setInterval(this.incrementNumDebris, 10000)
+        this.intervals.push(this.debrisInterval); 
+        this.intervals.push(setInterval(this.incrementScore, 10)); 
     }
 
     reset() {
+        this.timers.forEach(timer => {
+            clearTimeout(timer);
+        })
+        this.intervals.forEach(interval => {
+            clearInterval(interval); 
+        })
+        this.score.reset(); 
         this.num_debris = 0;
         this.debris = [];
         this.bonus = 1;
@@ -204,21 +221,18 @@ class Game {
             explosion: 0,
             warp: 0
         };
-        this.score = 0;
+        this.score = new _score_js__WEBPACK_IMPORTED_MODULE_3__["default"]();
     }
 
     incrementNumDebris() {
         this.num_debris += 1; 
-        this.timers.push(setTimeout(() => this.incrementNumDebris(), 10000));
     }
 
     incrementBonus() {
         this.bonus += 1; 
     }
 
-    incrementScore() {
-        this.socre += 1; 
-    }
+    
 
     add(object) {
         if (object instanceof _debris_js__WEBPACK_IMPORTED_MODULE_0__["default"]) {
@@ -234,17 +248,19 @@ class Game {
 
     addDebris() {
         const debris = {
-            vel: _util_js__WEBPACK_IMPORTED_MODULE_3__["randomVel"](), 
+            vel: _util_js__WEBPACK_IMPORTED_MODULE_4__["randomVel"](), 
             game: this, 
         }; 
         this.add(new _debris_js__WEBPACK_IMPORTED_MODULE_0__["default"](debris)); 
     }
 
     addStar() {
-        const star = {
-            game: this, 
-        }; 
-        this.add(new _star_js__WEBPACK_IMPORTED_MODULE_2__["default"](star))
+        if (this.stars.length < this.num_stars) {
+            const star = new _star_js__WEBPACK_IMPORTED_MODULE_2__["default"]({
+                game: this, 
+            }); 
+            this.add(star)
+        }
         this.timers.push(setTimeout(this.addStar, 110)); 
     }
 
@@ -269,28 +285,31 @@ class Game {
     draw(ctx, ctxStar) {
         ctx.clearRect(0, 0, this.width, this.height);  
         ctxStar.clearRect(0, 0, this.width, this.height)
-       
+
+        if (this.over === false) {
+            this.score.draw(ctx); 
+        }
 
         if (this.over === true && this.frameNums.explosion < 34) {
-            Object(_sprites_explosion_js__WEBPACK_IMPORTED_MODULE_4__["explosionRender"])(this.end_position, ctx, this.frameNums.explosion)();
+            Object(_sprites_explosion_js__WEBPACK_IMPORTED_MODULE_5__["explosionRender"])(this.end_position, ctx, this.frameNums.explosion)();
             this.frameNums.explosion += 1;
         } else if (this.ships.length > 0 && this.over === false) {
             let ship = this.ships[0]; 
-            Object(_sprites_rocket_fire_js__WEBPACK_IMPORTED_MODULE_5__["rocketFireRender"])(ship.pos, ctx, this.frameNums.rocket)(); 
+            Object(_sprites_rocket_fire_js__WEBPACK_IMPORTED_MODULE_6__["rocketFireRender"])(ship.pos, ctx, this.frameNums.rocket)(); 
             this.frameNums.rocket += 1; 
             if (this.frameNums.rocket > 33) this.frameNums.rocket = 0; 
         }
 
         if (this.ships.length > 0 && this.ships[0].teleport === true) {
             let ship = this.ships[0]; 
-            Object(_sprites_teleport_js__WEBPACK_IMPORTED_MODULE_6__["teleportSwirlRender"])(ship.oldPos, ctx, this.frameNums.warp)(); 
+            Object(_sprites_teleport_js__WEBPACK_IMPORTED_MODULE_7__["teleportSwirlRender"])(ship.oldPos, ctx, this.frameNums.warp)(); 
             this.frameNums.warp += 1;
             if (this.frameNums.warp > 39) {
                 this.frameNums.warp = 0; 
                 ship.teleport = false; 
             }
         }
-        // ctx.fillText(this.score, 0, 0);
+        
         this.allObjects().forEach(object => {
             if (object instanceof _star_js__WEBPACK_IMPORTED_MODULE_2__["default"]) {
                 object.draw(ctxStar); 
@@ -344,16 +363,20 @@ class Game {
         }
     }
 
-    step(delta) {
-        this.moveObjects(delta); 
+    step() {
+        this.moveObjects(); 
         this.checkCollisions(); 
         if (this.debris.length < this.num_debris) {
             this.addDebris(); 
         }
+        if (this.over === false) {
+            this.score.increment(); 
+        }
     }
 
-    gameOver() {
-        
+    gameOver(menu) {
+        clearInterval(this.debrisInterval); 
+        menu.gameOverScreen(this.score.score); 
     }
 }
 
@@ -370,8 +393,9 @@ class Game {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./util.js */ "./lib/util.js");
- 
+/* harmony import */ var _menus_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./menus.js */ "./lib/menus.js");
+
+
 
 
 class GameView {
@@ -387,14 +411,22 @@ class GameView {
         this.animationFrame; 
         this.animate = this.animate.bind(this); 
         this.pause = this.pause.bind(this); 
-        this.startDebris = this.startDebris.bind(this); 
+        // this.startDebris = this.startDebris.bind(this); 
         this.pauseTime = 0; 
+        this.controlsShown = false; 
+        this.menu = new _menus_js__WEBPACK_IMPORTED_MODULE_0__["default"]({
+            ctx: ctx, 
+            ctxStar: ctxStar, 
+            game: game
+        }); 
 
         document.addEventListener("keydown", e => {
             if (e.key === "u") {
                 this.start(); 
             } else if (e.key === "o") {
                 this.pause(); 
+            } else if (e.key === "r") {
+                this.showControls(); 
             }
 
             if (this.keysPressed["f"] === true) {
@@ -440,53 +472,58 @@ class GameView {
 
         document.addEventListener("keyup", e => {
             this.ship.stops(e.key);
-            delete this.keysPressed[e.key]; 
+            delete this.keysPressed[e.key];
         }); 
     }
 
     animate() {
-        if (this.paused === true ) {
+        if (this.paused === true ) { 
             return; 
         }; 
+        if (this.game.over === true) {
+            this.game.gameOver(this.menu); 
+        }
         this.game.step(); 
         this.game.draw(this.ctx, this.ctxStar); 
-         
-
-
-
         this.animationFrame = requestAnimationFrame(this.animate); 
     }
 
     start() {
-        this.game.timers.forEach(timer => {
-            clearTimeout(timer); 
-        })
         cancelAnimationFrame(this.animationFrame); 
-        // this.game = new Game(); 
         this.game.reset(); 
+        // this.menu.scoreDisplay(this.game.score); 
+        this.menu.clearMenus(); 
+        this.paused = false; 
         this.ctx.clearRect(0, 0, this.game.width, this.game.height);
         this.ctxStar.clearRect(0, 0, this.game.width, this.game.height) 
         this.ship = this.game.addShip();
-        this.game.addStar(); 
+        this.game.start(); 
         // this.game.bonusTimer = setInterval(() => this.game.incrementBonus(), 30000)
-        // this.game.scoreTimer = setInterval(() => this.game.incrementScore(), 10)
-        this.game.timers.push(setTimeout(this.startDebris, 3000)); 
+       
         this.animationFrame = requestAnimationFrame(this.animate); 
     }
      
-    startDebris() {
-        this.game.num_debris = 3; 
-        this.game.timers.push(setTimeout(() => this.game.incrementNumDebris(), 10000)); 
-    }
 
     pause() {
         if (this.paused === true) {
             this.paused = false; 
-            this.animate(this.pauseTime); 
+            this.animate(); 
             this.pauseTime = 0; 
         } else {
-            this.paused = true;
+            this.paused = true; 
             cancelAnimationFrame(this.animationFrame); 
+        }
+    }
+
+    showControls() {
+        if (this.controlsShown === true) {
+            this.menu.clearControls(); 
+            this.controlsShown = false; 
+            this.pause(); 
+        } else {
+            this.menu.controlsScreen(); 
+            this.controlsShown = true; 
+            this.pause(); 
         }
     }
 }
@@ -508,7 +545,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sprites_explosion_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./sprites/explosion.js */ "./lib/sprites/explosion.js");
 /* harmony import */ var _game_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game.js */ "./lib/game.js");
 /* harmony import */ var _game_view_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_view.js */ "./lib/game_view.js");
-/* harmony import */ var _title_screen_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./title_screen.js */ "./lib/title_screen.js");
+/* harmony import */ var _menus_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./menus.js */ "./lib/menus.js");
  
  
 
@@ -522,13 +559,66 @@ document.addEventListener("DOMContentLoaded", function () {
     const canvasST = document.getElementById("star-canvas"); 
     const ctxStar = canvasST.getContext("2d"); 
 
-    Object(_title_screen_js__WEBPACK_IMPORTED_MODULE_4__["renderTitle"])(ctx, canvasEl); 
     const game = new _game_js__WEBPACK_IMPORTED_MODULE_2__["default"]();
-    new _game_view_js__WEBPACK_IMPORTED_MODULE_3__["default"](game, ctx, ctxStar); 
+    new _game_view_js__WEBPACK_IMPORTED_MODULE_3__["default"](game, ctx, ctxStar).menu.titleScreen(); 
 
     
 })
 
+
+/***/ }),
+
+/***/ "./lib/menus.js":
+/*!**********************!*\
+  !*** ./lib/menus.js ***!
+  \**********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+class Menu {
+    constructor(options){
+        this.ctx = options.ctx; 
+        this.game = options.game; 
+        this.overRendered = false; 
+        this.ctxStar = options.ctxStar; 
+        this.title = document.getElementById("title-screen"); 
+        this.gameOver = document.getElementById("game-over"); 
+        this.controls = document.getElementById("controls"); 
+        // this.score = document.getElementById("score")
+    }
+
+    titleScreen() {
+        this.ctx.clearRect(0, 0, this.game.width, this.game.height);
+        this.ctxStar.clearRect(0, 0, this.game.width, this.game.height); 
+
+        this.title.style.display = "block"; 
+    }
+
+    gameOverScreen(score) {
+        if (this.overRendered === false ){
+            this.overRendered = true; 
+            document.getElementById("final-score").innerText += score; 
+            this.gameOver.style.display = "block"; 
+        }
+    }
+
+    controlsScreen() {
+        this.controls.style.display = "block"; 
+    }
+
+    clearControls() {
+        this.controls.style.display = "none"; 
+    }
+
+    clearMenus() {
+        this.title.style.display = "none"; 
+        this.gameOver.style.display = "none"; 
+    }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (Menu); 
 
 /***/ }),
 
@@ -588,6 +678,41 @@ class MovingObject {
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (MovingObject); 
+
+/***/ }),
+
+/***/ "./lib/score.js":
+/*!**********************!*\
+  !*** ./lib/score.js ***!
+  \**********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+class Score {
+    constructor() { 
+        this.pos = [0, 700];
+        this.score = 0; 
+    }
+
+    increment() {
+        this.score += 1;
+    }
+
+    reset() {
+        this.score = 0; 
+    }
+
+    draw(ctx) {
+        ctx.fillStyle = "white"; 
+        ctx.textAlign = "right"; 
+        ctx.font = '10px scream_when_youre_ready_to_Rg';
+        ctx.fillText(this.score, 700, 20);
+    }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (Score); 
 
 /***/ }),
 
@@ -862,13 +987,13 @@ function explosionRender(position, ctx, frame) {
     let frameNumber = Math.floor( frame / 6 )
     const explosionImage = document.getElementById('explosion');
     const frames = {
-        0: () => ctx.drawImage(explosionImage, 0, 0, 32, 32, position[0] - 45, position[1] - 15, 64, 64), 
-        1: () => ctx.drawImage(explosionImage, 32, 0, 32, 32, position[0] - 45, position[1] - 15, 64, 64),     
-        2: () => ctx.drawImage(explosionImage, 64, 0, 32, 32, position[0] - 45, position[1] - 15, 64, 64),       
-        3: () => ctx.drawImage(explosionImage, 96, 0, 32, 32, position[0] - 45, position[1] - 15, 64, 64),        
-        4: () => ctx.drawImage(explosionImage, 128, 0, 32, 32, position[0] - 45, position[1] - 15, 64, 64),      
-        5: () => ctx.drawImage(explosionImage, 160, 0, 32, 32, position[0] - 45, position[1] - 15, 64, 64),     
-        6: () => ctx.drawImage(explosionImage, 192, 0, 32, 32, position[0] - 45, position[1] - 15, 64, 64)
+        0: () => ctx.drawImage(explosionImage, 0, 0, 32, 32, position[0] - 60, position[1] - 15, 64, 64), 
+        1: () => ctx.drawImage(explosionImage, 32, 0, 32, 32, position[0] - 60, position[1] - 15, 64, 64),     
+        2: () => ctx.drawImage(explosionImage, 64, 0, 32, 32, position[0] - 60, position[1] - 15, 64, 64),       
+        3: () => ctx.drawImage(explosionImage, 96, 0, 32, 32, position[0] - 60, position[1] - 15, 64, 64),        
+        4: () => ctx.drawImage(explosionImage, 128, 0, 32, 32, position[0] - 60, position[1] - 15, 64, 64),      
+        5: () => ctx.drawImage(explosionImage, 160, 0, 32, 32, position[0] - 60, position[1] - 15, 64, 64),     
+        6: () => ctx.drawImage(explosionImage, 192, 0, 32, 32, position[0] - 60, position[1] - 15, 64, 64)
         
     }
     return frames[frameNumber]
@@ -972,27 +1097,6 @@ class Star extends _moving_object_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (Star); 
-
-/***/ }),
-
-/***/ "./lib/title_screen.js":
-/*!*****************************!*\
-  !*** ./lib/title_screen.js ***!
-  \*****************************/
-/*! exports provided: renderTitle */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderTitle", function() { return renderTitle; });
-function renderTitle(ctx, canvas, game) {
-    // ctx.clearRect(0, 0, game.width, game.height)
-    ctx.clear
-    ctx.fillStyle = "white";
-    ctx.textAlign = "center";
-    ctx.font = '30px VerminVibes'; 
-    ctx.fillText("Ganymede", canvas.width / 2, canvas.height / 2);
-}
 
 /***/ }),
 

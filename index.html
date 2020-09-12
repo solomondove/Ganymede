@@ -8,18 +8,46 @@
     <link rel="stylesheet" href="./stylesheets/primary.css">
 </head>
 <body>
-    <div id="preloadfont" style="font-family: VerminVibes;">.</div>
-    <img src="./assets/ship001.png" alt="ship" id="ship">
-    <img src="./assets/Asteroid Brown.png" alt="debris" id="debris">
-    <img src='./assets/explosion.png' alt="explosion" id="explosion"> 
-    <img src='./assets/flame_frames.png' alt="rocket-fire" id="rocket-fire">
-    <img src='./assets/energyBallImpact.png' alt="teleport" id="teleport">
-    <img src='./assets/selectionswirl.png' alt="teleport" id="teleport-swirl">
+    <div id="image-div">
+        <img src="./assets/ship001.png" alt="ship" id="ship">
+        <img src="./assets/Asteroid Brown.png" alt="debris" id="debris">
+        <img src='./assets/explosion.png' alt="explosion" id="explosion"> 
+        <img src='./assets/flame_frames.png' alt="rocket-fire" id="rocket-fire">
+        <img src='./assets/energyBallImpact.png' alt="teleport" id="teleport">
+        <img src='./assets/selectionswirl.png' alt="teleport" id="teleport-swirl">
+    </div>
     <div class="dashboard">
-
         <div class="game-backdrop">
             <canvas id="star-canvas" width="750" height="500"></canvas>
             <canvas id="game-canvas" width="750" height="500"></canvas>
+            <div id="title-screen">
+                <h1>Ganymede</h1>
+                <p>press 'u' to start</p>
+                <p>press 'r' for controls</p>
+            </div>
+            <div id="game-over">
+                <h1>GAME OVER</h1>
+                <h2 id="final-score">Score:</h2>
+                <p>press 'u' to restart</p>
+                <p>press 'r' for controls</p>
+            </div>
+            <div id="controls">
+                <h1>Controls</h1>
+                <div>
+                    <p>up: 'i'</p>
+                    <p>down: 'k'</p>
+                    <p>left: 'j'</p>
+                    <p>left: 'l'</p>
+                    <p>teleport: 'f' + any direction</p>
+                    <p>restart: 'u'</p>
+                    <p>controls: 'r'</p>
+                    <p>pause: 'o'</p>
+                </div>
+                <h3>press 'r' to return</h3>
+            </div>
+        </div>
+        <div class="bottom-menu">
+            <audio controls src="./assets/SLOWEST-TEMPO2019-12-11_-_Retro_Platforming_-_David_Fesliyan.mp3"></audio>
         </div>
     </div>
 </body>

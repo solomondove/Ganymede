@@ -1,3 +1,14 @@
+
+@font-face {
+    font-family: 'scream_when_youre_ready_to_Rg';
+    src: url('../assets/screamwhenyourereadytodieregular-6ajd-webfont.woff2') format('woff2'),
+         url('../assets/screamwhenyourereadytodieregular-6ajd-webfont.woff') format('woff'), 
+         url('../assets/ScreamWhenYoureReadyToDieRegular-6AjD.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
 @keyframes move {
     0% {
         background-position: left; 
@@ -7,27 +18,26 @@
     }
 }
 
-@font-face {
-    font-family: "VerminVibes"; 
-    src: url("../assets/Vermin Vibes.ttf"); 
-}
-
-#preloadfont{
-    font-family: "VerminVibes"; 
-}
-
 html, body { 
     height: 100%; 
     width: 100%; 
-    font-family: "VerminVibes"; 
+    font-family: "scream_when_youre_ready_to_Rg"; 
 }
 
+#image-div {
+    position: absolute; 
+    z-index: -1; 
+    height: 100px; 
+    overflow: hidden; 
+}
 .dashboard {
     background-color: black; 
     padding: 50px 100px; 
     height: 100%; 
-    display: flex; 
+    width: 100%; 
+    /* display: flex;  */
     justify-content: center; 
+    position: relative; 
 }
 
 .game-backdrop {
@@ -46,18 +56,84 @@ html, body {
     height: 500px; 
     justify-content: space-around; 
     padding: 50px 100px;  
+    border-radius: 5px;
 }
+
 
 #star-canvas {
     position: absolute; 
     background-color: rgb(0, 0, 0, .5);
+    border: 3px solid black; 
+    border-radius: 5px; 
     z-index: 0;
 }
+
 #game-canvas {
-    font-family: "verminvibes"; 
+    position: absolute; 
     border: 3px solid black; 
     border-radius: 5px; 
     z-index: 1; 
+}
+
+#title-screen {
+    position: absolute;  
+    z-index: 2;
+    top: 200px; 
+    font-family: "scream_when_youre_ready_to_Rg"; 
+    color: white; 
+    text-align: center; 
+}
+
+#title-screen h1 {
+    font-size: 50px; 
+}
+
+#game-over {
+    position: absolute;  
+    z-index: 2;
+    padding-top: 150px; 
+    font-family: "scream_when_youre_ready_to_Rg"; 
+    color: white; 
+    text-align: center; 
+    display: none; 
+    height: 356px; 
+    width: 750px; 
+    background-color: rgb(0, 0, 0, .5); 
+    border-radius: 5px; 
+}
+
+#game-over h1{
+    font-size: 50px; 
+}
+
+#game-over h2 {
+    font-size: 30px; 
+}
+
+#controls {
+    position: absolute;  
+    z-index: 3;
+    padding-top: 60px; 
+    font-family: "scream_when_youre_ready_to_Rg"; 
+    color: white; 
+    text-align: center; 
+    display: none; 
+    height: 446px; 
+    width: 750px; 
+    background-color: rgb(0, 0, 0, 1); 
+    border-radius: 5px; 
+}
+
+#controls h1 {
+    font-size: 40px; 
+}
+
+#controls p {
+    font-size: 12px; 
+}
+
+#controls h3 {
+    font-size: 25px; 
 }
 
 
@@ -66,3 +142,16 @@ html, body {
     z-index: -1;  
 }
 
+.bottom-menu {
+    display: flex; 
+    padding: 20px; 
+}
+
+/* #score {
+    display: block; 
+    position: absolute; 
+    z-index: 3; 
+    font-family: "scream_when_youre_ready_to_Rg"; 
+    text-align: right; 
+    color: white; 
+} */
