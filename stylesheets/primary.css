@@ -32,17 +32,18 @@ html, body {
 }
 .dashboard {
     background-color: black; 
-    padding: 50px 100px; 
+    /* padding: 50px 100px;  */
     height: 100%; 
     width: 100%; 
-    /* display: flex;  */
+    /* align-content: center;  */
+    display: flex; 
+    flex-direction: column; 
     justify-content: center; 
     position: relative; 
 }
 
 .game-backdrop {
-    /* margin: 50px;  */
-    /* height: 100%; */
+    margin: 0 auto; 
     position: relative; 
     background-image: url("../assets/background2.png"); 
     background-size: cover; 
@@ -144,14 +145,16 @@ html, body {
 
 .bottom-menu {
     display: flex; 
+    justify-content: space-around; 
     padding: 20px; 
 }
 
-/* #score {
-    display: block; 
-    position: absolute; 
-    z-index: 3; 
-    font-family: "scream_when_youre_ready_to_Rg"; 
-    text-align: right; 
+a {
     color: white; 
-} */
+    text-decoration: none; 
+    padding-bottom: 5px; 
+}
+
+a:hover {
+    color: grey; 
+}
