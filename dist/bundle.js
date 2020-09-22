@@ -185,6 +185,7 @@ class Game {
         this.timers = []; 
         this.intervals = []; 
         this.debrisInterval; 
+        this.endRendered = false; 
 
         this.add = this.add.bind(this); 
         this.step = this.step.bind(this); 
@@ -215,6 +216,7 @@ class Game {
         this.bonus = 1;
         this.ships = [];
         this.stars = []; 
+        this.endRendered = false; 
         this.over = false;
         this.frameNums = {
             rocket: 0,
@@ -341,6 +343,12 @@ class Game {
                     if (obj1.didCollideWith(obj2)) {
                         obj1.collideWith(obj2); 
                         if (obj2 instanceof _ship_js__WEBPACK_IMPORTED_MODULE_1__["default"] || obj1 instanceof _ship_js__WEBPACK_IMPORTED_MODULE_1__["default"]) {
+                            let sound = document.getElementById("explosion-sound");
+                            sound.play(); 
+                            this.timers.push(setTimeout(() => {
+                                sound.pause(); 
+                                sound.currentTime = 0; 
+                            }, 1000))
                             this.over = true; 
                             this.end_position = obj2.pos; 
                         }
@@ -376,7 +384,11 @@ class Game {
 
     gameOver(menu) {
         clearInterval(this.debrisInterval); 
-        menu.gameOverScreen(this.score.score); 
+        this.timers.push(setTimeout(() => {
+            this.endRendered = true; 
+            menu.gameOverScreen(this.score.score);
+        }
+        , 1500)); 
     }
 }
 
@@ -421,8 +433,15 @@ class GameView {
         }); 
 
         document.addEventListener("keydown", e => {
+            
             if (e.key === "u") {
-                this.start(); 
+                if (this.game.over === true && this.game.endRendered === true) {
+                    this.start(); 
+                    return; 
+                } else if (this.game.over === false) {
+                    this.start(); 
+                    return; 
+                }
             } else if (e.key === "o") {
                 this.pause(); 
             } else if (e.key === "r") {
@@ -431,7 +450,7 @@ class GameView {
 
             if (this.keysPressed["f"] === true) {
                 this.ship.warp(e.key); 
-            } else if (this.keysPressed["j"] === true){
+            } else  if (this.keysPressed["j"] === true){
                 if (e.key === "f") {
                     if (this.keysPressed["i"] === true ){
                         this.ship.warp("ji")
@@ -490,6 +509,7 @@ class GameView {
 
     start() {
         cancelAnimationFrame(this.animationFrame); 
+        this.keysPressed = {}; 
         this.game.reset(); 
         // this.menu.scoreDisplay(this.game.score); 
         this.menu.clearMenus(); 
@@ -827,6 +847,9 @@ class Ship extends _moving_object_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
     }
 
     warp(direction) {
+        let sound = document.getElementById("warp-sound"); 
+        sound.play(); 
+      
         Object(_ship_controls_util_js__WEBPACK_IMPORTED_MODULE_2__["warpUtil"])(direction, this); 
     }
 
