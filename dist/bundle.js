@@ -185,11 +185,14 @@ class Game {
         this.timers = []; 
         this.intervals = []; 
         this.debrisInterval; 
+        this.endRendered = false; 
+        this.muted = true; 
 
         this.add = this.add.bind(this); 
         this.step = this.step.bind(this); 
         this.draw = this.draw.bind(this); 
         this.addStar = this.addStar.bind(this); 
+        this.addDebris = this.addDebris.bind(this); 
         this.incrementNumDebris = this.incrementNumDebris.bind(this); 
     }
     
@@ -215,6 +218,7 @@ class Game {
         this.bonus = 1;
         this.ships = [];
         this.stars = []; 
+        this.endRendered = false; 
         this.over = false;
         this.frameNums = {
             rocket: 0,
@@ -341,6 +345,14 @@ class Game {
                     if (obj1.didCollideWith(obj2)) {
                         obj1.collideWith(obj2); 
                         if (obj2 instanceof _ship_js__WEBPACK_IMPORTED_MODULE_1__["default"] || obj1 instanceof _ship_js__WEBPACK_IMPORTED_MODULE_1__["default"]) {
+                            if (this.muted === false ) {
+                                let sound = document.getElementById("explosion-sound");
+                                sound.play(); 
+                                this.timers.push(setTimeout(() => {
+                                    sound.pause(); 
+                                    sound.currentTime = 0; 
+                                }, 1000))
+                            }
                             this.over = true; 
                             this.end_position = obj2.pos; 
                         }
@@ -374,9 +386,13 @@ class Game {
         }
     }
 
-    gameOver(menu) {
+    gameOver(menu) { 
         clearInterval(this.debrisInterval); 
-        menu.gameOverScreen(this.score.score); 
+        this.timers.push(setTimeout(() => {
+            this.endRendered = true; 
+            menu.gameOverScreen(this.score.score);
+        }
+        , 1500)); 
     }
 }
 
@@ -411,6 +427,7 @@ class GameView {
         this.animationFrame; 
         this.animate = this.animate.bind(this); 
         this.pause = this.pause.bind(this); 
+        this.mute = this.mute.bind(this); 
         // this.startDebris = this.startDebris.bind(this); 
         this.pauseTime = 0; 
         this.controlsShown = false; 
@@ -419,26 +436,36 @@ class GameView {
             ctxStar: ctxStar, 
             game: game
         }); 
+       
 
         document.addEventListener("keydown", e => {
+            
             if (e.key === "u") {
-                this.start(); 
+                if (this.game.over === true && this.game.endRendered === true) {
+                    this.start(); 
+                    return; 
+                } else if (this.game.over === false) {
+                    this.start(); 
+                    return; 
+                }
             } else if (e.key === "o") {
                 this.pause(); 
             } else if (e.key === "r") {
                 this.showControls(); 
+            } else if (e.key === 'q') {
+                this.mute(); 
             }
 
             if (this.keysPressed["f"] === true) {
-                this.ship.warp(e.key); 
-            } else if (this.keysPressed["j"] === true){
+                this.ship.warp(e.key, this.game.muted); 
+            } else  if (this.keysPressed["j"] === true){
                 if (e.key === "f") {
                     if (this.keysPressed["i"] === true ){
-                        this.ship.warp("ji")
+                        this.ship.warp("ji", this.game.muted)
                     } else if (this.keysPressed["k"] === true) {
-                        this.ship.warp("jk")
+                        this.ship.warp("jk", this.game.muted)
                     } else {
-                        this.ship.warp("j"); 
+                        this.ship.warp("j", this.game.muted); 
                     }
                 }
                 this.ship.angleLeft(e.key); 
@@ -446,32 +473,36 @@ class GameView {
             } else if (this.keysPressed["l"] === true) {
                 if (e.key === "f") {
                     if (this.keysPressed["i"] === true){
-                        this.ship.warp("li")
+                        this.ship.warp("li", this.game.muted)
                     } else if (this.keysPressed["k"] === true) {
-                        this.ship.warp("lk")
+                        this.ship.warp("lk", this.game.muted)
                     } else {
-                        this.ship.warp("l"); 
+                        this.ship.warp("l", this.game.muted); 
                     }
                 } 
                 this.ship.angleRight(e.key)
             } else if (this.keysPressed["i"] === true) {
                 if (e.key === "f") {
-                    this.ship.warp("i"); 
+                    this.ship.warp("i", this.game.muted); 
                 }
                 this.ship.angleUp(e.key);
             } else if (this.keysPressed["k"] === true) {
                 if (e.key === "f") {
-                    this.ship.warp("k")
+                    this.ship.warp("k", this.game.muted)
                 }
                 this.ship.angleDown(e.key);
             }else {
-                this.ship.moves(e.key); 
+                if (this.ship) {
+                    this.ship.moves(e.key); 
+                }
             }
             this.keysPressed[e.key] = true;
         }); 
 
         document.addEventListener("keyup", e => {
-            this.ship.stops(e.key);
+            if (this.ship) {
+                this.ship.stops(e.key);
+            }
             delete this.keysPressed[e.key];
         }); 
     }
@@ -490,6 +521,7 @@ class GameView {
 
     start() {
         cancelAnimationFrame(this.animationFrame); 
+        this.keysPressed = {}; 
         this.game.reset(); 
         // this.menu.scoreDisplay(this.game.score); 
         this.menu.clearMenus(); 
@@ -524,6 +556,20 @@ class GameView {
             this.menu.controlsScreen(); 
             this.controlsShown = true; 
             this.pause(); 
+        }
+    }
+
+    mute() {
+        if (this.game.muted === false) {
+            this.game.muted = true; 
+            let audios = document.getElementsByTagName("AUDIO"); 
+            Object.values(audios).forEach(audio => {
+                audio.pause(); 
+            })
+        } else {
+            this.game.muted = false; 
+            let music = document.getElementById("game-music"); 
+            music.play(); 
         }
     }
 }
@@ -561,7 +607,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const game = new _game_js__WEBPACK_IMPORTED_MODULE_2__["default"]();
     new _game_view_js__WEBPACK_IMPORTED_MODULE_3__["default"](game, ctx, ctxStar).menu.titleScreen(); 
-
     
 })
 
@@ -826,7 +871,13 @@ class Ship extends _moving_object_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
         }
     }
 
-    warp(direction) {
+    warp(direction, muted) {
+        if ( muted === false ) {
+            let sound = document.getElementById("warp-sound"); 
+            sound.volume = 0.2; 
+            sound.play(); 
+        }
+      
         Object(_ship_controls_util_js__WEBPACK_IMPORTED_MODULE_2__["warpUtil"])(direction, this); 
     }
 

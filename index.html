@@ -11,6 +11,9 @@
     <title>Ganymede</title>
     <script type="application/javascript" src="./dist/bundle.js"></script>
     <link rel="stylesheet" href="./stylesheets/primary.css">
+    <audio id="warp-sound" src="./assets/sfx_movement_portal3.wav"></audio>
+    <audio id="explosion-sound" loop=false src="./assets//sfx_exp_medium7.wav"></audio>
+    <audio autoplay id="game-music"><source src="./assets/SLOWEST-TEMPO2019-12-11_-_Retro_Platforming_-_David_Fesliyan.mp3"></audio>
 </head>
 <body>
     <div id="image-div">
@@ -29,12 +32,14 @@
                 <h1>Ganymede</h1>
                 <p>press 'u' to start</p>
                 <p>press 'r' for controls</p>
+                <p>press 'q' to toggle sound</p>
             </div>
             <div id="game-over">
                 <h1>GAME OVER</h1>
                 <h2 id="final-score">Score:</h2>
                 <p>press 'u' to restart</p>
                 <p>press 'r' for controls</p>
+                <p>press 'q' to toggle sound</p>
             </div>
             <div id="controls">
                 <h1>Controls</h1>
@@ -47,12 +52,12 @@
                     <p>restart: 'u'</p>
                     <p>controls: 'r'</p>
                     <p>pause: 'o'</p>
+                    <p>press 'q' to toggle sound</p>
                 </div>
                 <h3>press 'r' to return</h3>
             </div>
         </div>
         <div class="bottom-menu">
-            <audio controls src="./assets/SLOWEST-TEMPO2019-12-11_-_Retro_Platforming_-_David_Fesliyan.mp3"></audio>
             <a href="https://github.com/solomondove">
                 <img src='./assets/GitHub-Mark-Light-32px.png' alt="GitHub" id="GitHubIcon">
                 Solomon Dove 
