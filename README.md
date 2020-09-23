@@ -1,4 +1,4 @@
-![atl text](https://github.com/solomondove/Ganymede/blob/master/assets/Screen%20Shot%202020-09-22%20at%2012.48.51%20PM.png)
+![atl text](https://github.com/solomondove/Ganymede/blob/master/assets/screenshot.png?raw=true)
 
 **by Solomon Dove**
 
