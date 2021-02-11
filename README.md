@@ -8,7 +8,7 @@ keep us safe. There seems to be an upcoming asteroid field that we must navigate
 ## Development
 
 This app is strictly JavaScript with HTML5, leveraging the power of canvas to render seamless animations for the ship, 
-asteroids, and stars. Development is continuing with more features being added regularly.
+asteroids, and stars. Development primarily progressed over the course of 7 days. More features are planned for future implementation.
 
 **Rendering of Sprites**
 
